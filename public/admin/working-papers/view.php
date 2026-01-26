@@ -5,6 +5,7 @@ require_once __DIR__ . '/../../../app/Auth.php';
 require_once __DIR__ . '/../../../app/models/WorkingPaper.php';
 require_once __DIR__ . '/../../../app/models/Client.php';
 require_once __DIR__ . '/../../../app/models/Expense.php';
+require_once __DIR__ . '/../../../app/ClientAuth.php';
 
 Auth::requireAdmin();
 
@@ -76,6 +77,98 @@ ob_start();
                 </div>
             </div>
         </div>
+
+        <!-- Token Information (if sent) -->
+        <?php if (in_array($wp['status'], ['sent', 'submitted', 'returned', 'approved'])): ?>
+            <?php
+            require_once __DIR__ . '/../../../app/models/AccessToken.php';
+            $tokenModel = new AccessToken();
+            $activeToken = $tokenModel->getActiveToken($wpId);
+
+            $allTokens = $tokenModel->query(
+                "SELECT * FROM access_tokens WHERE working_paper_id = ? ORDER BY created_at DESC",
+                [$wpId]
+            )->fetchAll();
+            ?>
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Access Information</h5>
+                </div>
+                <div class="card-body">
+                    <?php if ($activeToken): ?>
+                        <?php
+                        $timeRemaining = ClientAuth::getTimeRemaining($activeToken['expires_at']);
+                        ?>
+                        <div class="alert alert-info" role="alert">
+                            <strong>Active Link:</strong> 
+                            <?php if (!$timeRemaining['expired']): ?>
+                                Expires in <strong><?= $timeRemaining['formatted'] ?></strong>
+                            <?php else: ?>
+                                <span class="text-danger">Expired</span>
+                            <?php endif; ?>
+                        </div>
+
+                        <p><strong>Client Link:</strong></p>
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" readonly value="<?= (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] ?>/working-paper/public/client/working-paper.php?token=<?= $activeToken['token'] ?>" id="clientLink">
+                            <button class="btn btn-outline-secondary" type="button" onclick="copyLink()">
+                                Copy Link
+                            </button>
+                        </div>
+                    <?php else: ?>
+                        <p class="text-muted">No active access token</p>
+                    <?php endif; ?>
+
+                    <?php if (count($allTokens) > 1): ?>
+                        <details class="mt-3">
+                            <summary style="cursor: pointer;">View all tokens (<?= count($allTokens) ?>)</summary>
+                            <div class="table-responsive mt-2">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Created</th>
+                                            <th>Expires</th>
+                                            <th>Used</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($allTokens as $token): ?>
+                                            <tr>
+                                                <td><?= date('M d, H:i', strtotime($token['created_at'])) ?></td>
+                                                <td><?= date('M d, H:i', strtotime($token['expires_at'])) ?></td>
+                                                    <?= $token['used_at'] ? date('M d, H:i', strtotime($token['used_at'])) : '-' ?>
+                                                <td>
+                                                    <?php if ($token['used_at']): ?>
+                                                        <span class="badge bg-success">Used</span>
+                                                    <?php elseif (strtotime($token['expires_at']) < time()): ?>
+                                                        <span class="badge bg-danger">Expired</span>
+                                                    <?php else: ?>
+                                                        <span class="badge bg-info">Active</span>
+                                                    <?php endif; ?>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </details>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <script>
+                function copyLink() {
+                    const linkInput = document.getElementById('clientLink');
+                    linkInput.select();
+                    linkInput.setSelectionRange(0, 99999);
+
+                    navigator.clipboard.writeText(linkInput.value).then(() => {
+                        alert('Link copied to clipboard!');
+                    });
+                }
+            </script>
+        <?php endif; ?>
 
         <!-- Expenses Table -->
         <div class="card mb-4">
