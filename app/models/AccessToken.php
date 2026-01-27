@@ -78,4 +78,13 @@ class AccessToken extends Model {
         $stmt = $this->query($sql, [$workingPaperId]);
         return $stmt->fetch();
     }
+
+    public function getAllByWorkingPaperId($workingPaperId) {
+        $stmt = $this->query(
+            "SELECT * FROM access_tokens WHERE working_paper_id = ? ORDER BY created_at DESC",
+            [$workingPaperId]
+        );
+
+        return $stmt->fetchAll();
+    }
 }

@@ -12,7 +12,10 @@ class StatusHistory extends Model {
         $sql = "
             SELECT 
                 sh.*,
-                u.name as changed_by_name,
+                CASE 
+                    WHEN sh.changed_by IS NULL THEN 'Client (System)'
+                    ELSE u.name
+                END as changed_by_name,
                 u.email as changed_by_email
             FROM {$this->table} sh
             LEFT JOIN users u ON sh.changed_by = u.id
@@ -30,7 +33,10 @@ class StatusHistory extends Model {
         $sql = "
             SELECT 
                 sh.*,
-                u.name as changed_by_name
+                CASE 
+                    WHEN sh.changed_by IS NULL THEN 'Client (System)'
+                    ELSE u.name
+                END as changed_by_name
             FROM {$this->table} sh
             LEFT JOIN users u ON sh.changed_by = u.id
             WHERE sh.working_paper_id = ?
@@ -39,5 +45,20 @@ class StatusHistory extends Model {
         ";
         $stmt = $this->query($sql, [$workingPaperId]);
         return $stmt->fetch();
+    }
+
+    /**
+     * Get changed by name (handle system/client submissions)
+     */
+    public function getChangedByName($changedById) {
+        if ($changedById == 0) {
+            return 'Client (System)';
+        }
+        
+        require_once __DIR__ . '/User.php';
+        $userModel = new User();
+        $user = $userModel->find($changedById);
+        
+        return $user ? $user['name'] : 'Unknown';
     }
 }
