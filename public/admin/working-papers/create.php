@@ -19,12 +19,12 @@ ob_start();
     <div class="col-md-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>Create Working Paper</h2>
-            <a href="/working-paper/public/admin/dashboard.php" class="btn btn-secondary">← Back to Dashboard</a>
+            <a href="/public/admin/dashboard.php" class="btn btn-secondary">← Back to Dashboard</a>
         </div>
 
         <div class="card">
             <div class="card-body">
-                <form method="POST" action="/working-paper/public/admin/working-papers/store.php" id="wpForm">
+                <form method="POST" action="/public/admin/working-papers/store.php" id="wpForm">
                     
                     <!-- Client & Job Details -->
                     <div class="row mb-4">
@@ -39,7 +39,7 @@ ob_start();
                                 <?php endforeach; ?>
                             </select>
                             <div class="form-text">
-                                <a href="/working-paper/public/admin/clients/create.php">+ Add New Client</a>
+                                <a href="/public/admin/clients/create.php">+ Add New Client</a>
                             </div>
                         </div>
 
@@ -115,7 +115,7 @@ ob_start();
 
                     <!-- Submit Buttons -->
                     <div class="d-flex justify-content-end gap-2">
-                        <a href="/working-paper/public/admin/dashboard.php" class="btn btn-secondary">Cancel</a>
+                        <a href="/public/admin/dashboard.php" class="btn btn-secondary">Cancel</a>
                         <button type="submit" class="btn btn-primary">Create Working Paper</button>
                     </div>
 

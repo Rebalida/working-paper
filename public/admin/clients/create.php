@@ -51,7 +51,7 @@ ob_start();
     <div class="col-md-6">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>Add New Client</h2>
-            <a href="/working-paper/public/admin/working-papers/create.php" class="btn btn-secondary">← Back</a>
+            <a href="/public/admin/working-papers/create.php" class="btn btn-secondary">← Back</a>
         </div>
 
         <?php if ($success): ?>
@@ -82,7 +82,7 @@ ob_start();
                     </div>
 
                     <div class="d-flex justify-content-end gap-2">
-                        <a href="/working-paper/public/admin/working-papers/create.php" class="btn btn-secondary">Cancel</a>
+                        <a href="/public/admin/working-papers/create.php" class="btn btn-secondary">Cancel</a>
                         <button type="submit" class="btn btn-primary">Add Client</button>
                     </div>
                 </form>

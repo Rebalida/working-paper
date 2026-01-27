@@ -18,7 +18,7 @@ if (!isset($pageTitle)) {
             <span class="navbar-brand mb-0 h1">Working Paper Admin</span>
             <div class="d-flex align-items-center text-white">
                 <span class="me-3">Welcome, <?= htmlspecialchars($user['name']) ?></span>
-                <a href="/working-paper/public/logout.php" class="btn btn-outline-light btn-sm">Logout</a>
+                <a href="/public/logout.php" class="btn btn-outline-light btn-sm">Logout</a>
             </div>
         </div>
     </nav>

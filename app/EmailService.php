@@ -28,7 +28,7 @@ class EmailService {
      */
     public function sendInitialLink($clientEmail, $clientName, $workingPaper, $token) {
         try {
-            $link = $this->getBaseUrl() . "/working-paper/public/client/working-paper.php?token=" . $token;
+            $link = $this->getBaseUrl() . "/public/client/working-paper.php?token=" . $token;
             
             $this->mailer->addAddress($clientEmail, $clientName);
             $this->mailer->Subject = 'Working Paper Review Required - Admin';
@@ -48,7 +48,7 @@ class EmailService {
      */
     public function sendReturnedNotification($clientEmail, $clientName, $workingPaper, $token, $adminNotes = '') {
         try {
-            $link = $this->getBaseUrl() . "/working-paper/public/client/working-paper.php?token=" . $token;
+            $link = $this->getBaseUrl() . "/public/client/working-paper.php?token=" . $token;
             
             $this->mailer->clearAddresses();
             $this->mailer->addAddress($clientEmail, $clientName);

@@ -14,7 +14,7 @@ $user = Auth::user();
 // Get working paper ID
 $wpId = $_GET['id'] ?? null;
 if (!$wpId) {
-    header('Location: /working-paper/public/admin/dashboard.php');
+    header('Location: /public/admin/dashboard.php');
     exit;
 }
 
@@ -23,7 +23,7 @@ $wpModel = new WorkingPaper();
 $wp = $wpModel->find($wpId);
 
 if (!$wp) {
-    header('Location: /working-paper/public/admin/dashboard.php');
+    header('Location: /public/admin/dashboard.php');
     exit;
 }
 
@@ -46,7 +46,7 @@ ob_start();
     <div class="col-md-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>Working Paper Details</h2>
-            <a href="/working-paper/public/admin/dashboard.php" class="btn btn-secondary">← Back to Dashboard</a>
+            <a href="/public/admin/dashboard.php" class="btn btn-secondary">← Back to Dashboard</a>
         </div>
 
         <?php if ($success === 'created'): ?>
@@ -85,10 +85,7 @@ ob_start();
             $tokenModel = new AccessToken();
             $activeToken = $tokenModel->getActiveToken($wpId);
 
-            $allTokens = $tokenModel->query(
-                "SELECT * FROM access_tokens WHERE working_paper_id = ? ORDER BY created_at DESC",
-                [$wpId]
-            )->fetchAll();
+            $allTokens = $tokenModel->getAllByWorkingPaperId($wpId);
             ?>
             <div class="card mb-4">
                 <div class="card-header">
@@ -110,7 +107,7 @@ ob_start();
 
                         <p><strong>Client Link:</strong></p>
                         <div class="input-group mb-3">
-                            <input type="text" class="form-control" readonly value="<?= (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] ?>/working-paper/public/client/working-paper.php?token=<?= $activeToken['token'] ?>" id="clientLink">
+                            <input type="text" class="form-control" readonly value="<?= (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] ?>/public/client/working-paper.php?token=<?= $activeToken['token'] ?>" id="clientLink">
                             <button class="btn btn-outline-secondary" type="button" onclick="copyLink()">
                                 Copy Link
                             </button>
@@ -234,16 +231,16 @@ ob_start();
                 <h5 class="card-title">Actions</h5>
                 <div class="d-flex gap-2">
                     <?php if ($wp['status'] === 'draft'): ?>
-                        <a href="/working-paper/public/admin/working-papers/send.php?id=<?= $wpId ?>" 
+                        <a href="/public/admin/working-papers/send.php?id=<?= $wpId ?>" 
                            class="btn btn-success">
                             Send to Client
                         </a>
-                        <a href="/working-paper/public/admin/working-papers/edit.php?id=<?= $wpId ?>" 
+                        <a href="/public/admin/working-papers/edit.php?id=<?= $wpId ?>" 
                            class="btn btn-warning">
                             Edit
                         </a>
                     <?php elseif ($wp['status'] === 'submitted'): ?>
-                        <a href="/working-paper/public/admin/working-papers/review.php?id=<?= $wpId ?>" 
+                        <a href="/public/admin/working-papers/review.php?id=<?= $wpId ?>" 
                            class="btn btn-primary">
                             Review & Approve
                         </a>

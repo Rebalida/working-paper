@@ -15,7 +15,7 @@ $user = Auth::user();
 // Get working paper ID
 $wpId = $_GET['id'] ?? null;
 if (!$wpId) {
-    header('Location: /working-paper/public/admin/dashboard.php');
+    header('Location: /public/admin/dashboard.php');
     exit;
 }
 
@@ -24,13 +24,13 @@ $wpModel = new WorkingPaper();
 $wp = $wpModel->find($wpId);
 
 if (!$wp) {
-    header('Location: /working-paper/public/admin/dashboard.php');
+    header('Location: /public/admin/dashboard.php');
     exit;
 }
 
 // Check if already sent
 if ($wp['status'] !== 'draft') {
-    header('Location: /working-paper/public/admin/working-papers/view.php?id=' . $wpId . '&error=already_sent');
+    header('Location: /public/admin/working-papers/view.php?id=' . $wpId . '&error=already_sent');
     exit;
 }
 
@@ -63,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         );
 
         if ($emailSent) {
-            header('Location: /working-paper/public/admin/working-papers/view.php?id=' . $wpId . '&success=sent');
+            header('Location: /public/admin/working-papers/view.php?id=' . $wpId . '&success=sent');
             exit;
         } else {
             $error = 'Working paper status updated, but email failed to send. Please contact the client manually.';
@@ -81,7 +81,7 @@ ob_start();
     <div class="col-md-8">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>Send Working Paper to Client</h2>
-            <a href="/working-paper/public/admin/working-papers/view.php?id=<?= $wpId ?>" class="btn btn-secondary">← Back</a>
+            <a href="/public/admin/working-papers/view.php?id=<?= $wpId ?>" class="btn btn-secondary">← Back</a>
         </div>
 
         <?php if ($error): ?>
@@ -130,7 +130,7 @@ ob_start();
         <!-- Action Buttons -->
         <form method="POST" action="">
             <div class="d-flex justify-content-end gap-2">
-                <a href="/working-paper/public/admin/working-papers/view.php?id=<?= $wpId ?>" class="btn btn-secondary">
+                <a href="/public/admin/working-papers/view.php?id=<?= $wpId ?>" class="btn btn-secondary">
                     Cancel
                 </a>
                 <button type="submit" class="btn btn-success">

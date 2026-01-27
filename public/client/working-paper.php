@@ -133,7 +133,7 @@ ob_start();
 <?php endif; ?>
 
 <!-- Expenses Form -->
-<form method="POST" action="/working-paper/public/client/submit.php" enctype="multipart/form-data" id="expensesForm">
+<form method="POST" action="/public/client/submit.php" enctype="multipart/form-data" id="expensesForm">
     <input type="hidden" name="token" value="<?= htmlspecialchars($token) ?>">
     <input type="hidden" name="working_paper_id" value="<?= $workingPaper['id'] ?>">
     

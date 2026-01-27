@@ -7,7 +7,7 @@ Auth::init();
 
 // If already logged in, redirect to dashboard
 if (Auth::check()) {
-    header('Location: /working-paper/public/admin/dashboard.php');
+    header('Location: /public/admin/dashboard.php');
     exit;
 }
 
@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'] ?? '';
 
     if (Auth::login($email, $password)) {
-        header('Location: /working-paper/public/admin/dashboard.php');
+        header('Location: /public/admin/dashboard.php');
         exit;
     } else {
         $error = 'Invalid email or password';
@@ -30,7 +30,7 @@ $pageTitle = 'Login';
 ob_start();
 ?>
 
-<div class="d-flex align-items-center justify-content-center min-vh-100" style="">
+<div class="d-flex align-items-center justify-content-center min-vh-100">
     <div class="card shadow-lg" style="max-width: 400px; width: 100%; border-radius: 15px;">
         <div class="card-header text-white text-center py-4" style="background: #FBAC1B; border-radius: 15px 15px 0 0;">
             <h2 class="mb-0">Working Paper</h2>

@@ -55,7 +55,7 @@ ob_start();
     <div class="col-md-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>Working Papers Dashboard</h2>
-            <a href="/working-paper/public/admin/working-papers/create.php" class="btn btn-primary">
+            <a href="/public/admin/working-papers/create.php" class="btn btn-primary">
                 + Create New Working Paper
             </a>
         </div>
@@ -106,7 +106,7 @@ ob_start();
                 <?php if (empty($workingPapers)): ?>
                     <div class="alert alert-info" role="alert">
                         No working papers found. 
-                        <a href="/working-paper/public/admin/working-papers/create.php" class="alert-link">Create your first one!</a>
+                        <a href="/public/admin/working-papers/create.php" class="alert-link">Create your first one!</a>
                     </div>
                 <?php else: ?>
                     <div class="table-responsive">
@@ -139,17 +139,17 @@ ob_start();
                                         <td><?= date('M d, Y', strtotime($wp['created_at'])) ?></td>
                                         <td>
                                             <div class="btn-group btn-group-sm" role="group">
-                                                <a href="/working-paper/public/admin/working-papers/view.php?id=<?= $wp['id'] ?>" 
+                                                <a href="/public/admin/working-papers/view.php?id=<?= $wp['id'] ?>" 
                                                    class="btn btn-outline-primary">
                                                     View
                                                 </a>
                                                 <?php if ($wp['status'] === 'draft'): ?>
-                                                    <a href="/working-paper/public/admin/working-papers/send.php?id=<?= $wp['id'] ?>" 
+                                                    <a href="/public/admin/working-papers/send.php?id=<?= $wp['id'] ?>" 
                                                        class="btn btn-outline-success">
                                                         Send
                                                     </a>
                                                 <?php elseif ($wp['status'] === 'submitted'): ?>
-                                                    <a href="/working-paper/public/admin/working-papers/review.php?id=<?= $wp['id'] ?>" 
+                                                    <a href="/public/admin/working-papers/review.php?id=<?= $wp['id'] ?>" 
                                                        class="btn btn-outline-warning">
                                                         Review
                                                     </a>

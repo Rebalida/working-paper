@@ -8,7 +8,7 @@ require_once __DIR__ . '/../../../app/models/Expense.php';
 Auth::requireAdmin();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: /working-paper/public/admin/dashboard.php');
+    header('Location: /public/admin/dashboard.php');
     exit;
 }
 
@@ -56,10 +56,10 @@ try {
     }
 
     // Redirect to working paper view
-    header('Location: /working-paper/public/admin/working-papers/view.php?id=' . $wpId . '&success=created');
+    header('Location: /public/admin/working-papers/view.php?id=' . $wpId . '&success=created');
     exit;
 } catch (Exception $e) {
     // Redirect back with error
-    header('Location: /working-paper/public/admin/working-papers/create.php?error=' . urlencode($e->getMessage()));
+    header('Location: /public/admin/working-papers/create.php?error=' . urlencode($e->getMessage()));
     exit;
 }

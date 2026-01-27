@@ -100,7 +100,7 @@ class Auth {
     public static function require() {
         self::init();
         if (!self::check()) {
-            header('Location: /working-paper/public/login.php');
+            header('Location: /public/login.php');
             exit;
         }
     }
@@ -111,7 +111,7 @@ class Auth {
     public static function requireAdmin() {
         self::init();
         if (!self::isAdmin()) {
-            header('Location: /working-paper/public/login.php');
+            header('Location: /public/login.php');
             exit;
         }
     }
