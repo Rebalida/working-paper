@@ -164,13 +164,6 @@ ob_start();
                                 </div>
                             </div>
 
-                            <?php if ($expense['internal_comment']): ?>
-                                <div class="alert alert-secondary mb-3" role="alert">
-                                    <small><strong>Internal Note:</strong></small><br>
-                                    <small><?= htmlspecialchars($expense['internal_comment']) ?></small>
-                                </div>
-                            <?php endif; ?>
-
                             <div class="row">
                                 <div class="col-md-12 mb-3">
                                     <label for="comment_<?= $expense['id'] ?>" class="form-label">
@@ -266,7 +259,7 @@ ob_start();
                         <button type="submit" name="action" value="save" class="btn btn-outline-primary">
                             Save Draft
                         </button>
-                        <button type="submit" name="action" value="submit" class="btn btn-success btn-lg" 
+                        <button type="submit" name="action" value="submit" class="btn btn-success" 
                                 onclick="return confirm('Are you sure you want to submit this working paper? You will not be able to make changes after submission.')">
                             Submit
                         </button>

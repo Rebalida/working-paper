@@ -19,7 +19,7 @@ class EmailService {
         $this->mailer->Port = $_ENV['MAIL_PORT'];
         
         // Sender
-        $this->mailer->setFrom('noreply@gmail.com', 'Admin');
+        $this->mailer->setFrom('noreply@gmail.com', 'Endurego');
         $this->mailer->isHTML(true);
     }
 
@@ -31,7 +31,7 @@ class EmailService {
             $link = $this->getBaseUrl() . "/public/client/working-paper.php?token=" . $token;
             
             $this->mailer->addAddress($clientEmail, $clientName);
-            $this->mailer->Subject = 'Working Paper Review Required - Admin';
+            $this->mailer->Subject = 'Working Paper Review Required - Endurego';
             
             $body = $this->getInitialLinkTemplate($clientName, $workingPaper, $link);
             $this->mailer->Body = $body;
@@ -52,7 +52,7 @@ class EmailService {
             
             $this->mailer->clearAddresses();
             $this->mailer->addAddress($clientEmail, $clientName);
-            $this->mailer->Subject = 'Working Paper Returned for Revision - Admin';
+            $this->mailer->Subject = 'Working Paper Returned for Revision - Endurego';
             
             $body = $this->getReturnedTemplate($clientName, $workingPaper, $link, $adminNotes);
             $this->mailer->Body = $body;
@@ -71,7 +71,7 @@ class EmailService {
         try {
             $this->mailer->clearAddresses();
             $this->mailer->addAddress($clientEmail, $clientName);
-            $this->mailer->Subject = 'Working Paper Approved - Admin';
+            $this->mailer->Subject = 'Working Paper Approved - Endurego';
 
             $body = $this->getApprovedTemplate($clientName, $workingPaper);
             $this->mailer->Body = $body;

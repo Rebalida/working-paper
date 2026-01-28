@@ -191,7 +191,7 @@ ob_start();
                                                             Uploaded: <?= date('M d, Y H:i', strtotime($doc['created_at'])) ?>
                                                         </small>
                                                     </div>
-                                                    <a href="/public/uploads/<?= htmlspecialchars($doc['file_path']) ?>" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                    <a href="/public/view-file.php?file=<?= htmlspecialchars($doc['file_path']) ?>" target="_blank" class="btn btn-sm btn-outline-primary">
                                                         View
                                                     </a>
                                                 </li>
@@ -283,7 +283,7 @@ function saveReviewNote(expenseId) {
     
     statusSpan.innerHTML = '<span class="text-muted">Saving...</span>';
     
-    fetch('/endurego/public/admin/working-papers/save-note.php', {
+    fetch('/public/admin/working-papers/save-note.php', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
