@@ -54,6 +54,26 @@ ob_start();
                 <strong>✓ Working Paper created successfully!</strong>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
+        <?php elseif ($success === 'sent'): ?>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <strong>✓ Working paper sent to client successfully!</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php elseif ($success === 'approved'): ?>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <strong>✓ Working paper approved successfully!</strong> The client has been notified.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php elseif ($success === 'returned'): ?>
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                <strong>↩ Working paper returned for revision.</strong> A new link has been sent to the client.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php elseif ($success === 'updated'): ?>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <strong>✓ Working paper updated successfully!</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
         <?php endif; ?>
 
         <!-- Working Paper Header -->
@@ -134,7 +154,7 @@ ob_start();
                                             <tr>
                                                 <td><?= date('M d, H:i', strtotime($token['created_at'])) ?></td>
                                                 <td><?= date('M d, H:i', strtotime($token['expires_at'])) ?></td>
-                                                    <?= $token['used_at'] ? date('M d, H:i', strtotime($token['used_at'])) : '-' ?>
+                                                <td><?= $token['used_at'] ? date('M d, H:i', strtotime($token['used_at'])) : '-' ?></td>
                                                 <td>
                                                     <?php if ($token['used_at']): ?>
                                                         <span class="badge bg-success">Used</span>
@@ -245,7 +265,7 @@ ob_start();
                             Review & Approve
                         </a>
                     <?php elseif ($wp['status'] === 'approved'): ?>
-                        <span class="badge bg-success fs-5">✓ Approved</span>
+                        <span class="badge bg-success pb-2 fs-6">Approved</span>
                     <?php endif; ?>
                 </div>
             </div>
