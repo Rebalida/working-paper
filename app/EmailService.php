@@ -50,11 +50,14 @@ class EmailService {
         try {
             $link = $this->getBaseUrl() . "/public/client/working-paper.php?token=" . $token;
             
+            // Count client-added expenses
+            $clientExpensesCount = $this->getClientAddedExpensesCount($workingPaper['id']);
+            
             $this->mailer->clearAddresses();
             $this->mailer->addAddress($clientEmail, $clientName);
             $this->mailer->Subject = 'Working Paper Returned for Revision - Endurego';
             
-            $body = $this->getReturnedTemplate($clientName, $workingPaper, $link, $adminNotes);
+            $body = $this->getReturnedTemplate($clientName, $workingPaper, $link, $adminNotes, $clientExpensesCount);
             $this->mailer->Body = $body;
             
             return $this->mailer->send();
@@ -90,6 +93,19 @@ class EmailService {
         $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
         $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
         return $protocol . '://' . $host;
+    }
+
+    /**
+     * Count client-added expenses for a working paper
+     */
+    private function getClientAddedExpensesCount($workingPaperId) {
+        require_once __DIR__ . '/models/Expense.php';
+        $expenseModel = new Expense();
+        $allExpenses = $expenseModel->getByWorkingPaperId($workingPaperId);
+        
+        return count(array_filter($allExpenses, function($exp) {
+            return isset($exp['added_by']) && $exp['added_by'] === 'client';
+        }));
     }
 
     /**
@@ -130,7 +146,7 @@ class EmailService {
                     
                     <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 5px; padding: 15px; margin: 20px 0;">
                         <p style="margin: 0; color: #856404;">
-                            <strong>⏰ Important:</strong> This link will expire in <strong>1 hour</strong> for security purposes.
+                            <strong>Important:</strong> This link will expire in <strong>1 hour</strong> for security purposes.
                         </p>
                     </div>
                     
@@ -153,7 +169,7 @@ class EmailService {
     /**
      * Returned for revision email template
      */
-    private function getReturnedTemplate($clientName, $workingPaper, $link, $adminNotes) {
+    private function getReturnedTemplate($clientName, $workingPaper, $link, $adminNotes, $clientExpensesCount = 0) {
         return '
             <!DOCTYPE html>
             <html>
@@ -180,6 +196,12 @@ class EmailService {
                         <p style="margin: 5px 0;"><strong>Job Reference:</strong> ' . htmlspecialchars($workingPaper['job_reference']) . '</p>
                     </div>
                     
+                    ' . ($clientExpensesCount > 0 ? '
+                    <div style="background: #d1ecf1; border-left: 4px solid #17a2b8; padding: 15px; margin: 20px 0;">
+                        <p style="margin: 0;"><strong>Note:</strong> Your previously added ' . $clientExpensesCount . ' expense(s) have been preserved and are still available for editing.</p>
+                    </div>
+                    ' : '') . '
+                    
                     ' . ($adminNotes ? '
                     <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;">
                         <p style="margin: 0 0 10px 0;"><strong>Review Notes:</strong></p>
@@ -195,7 +217,7 @@ class EmailService {
                     
                     <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 5px; padding: 15px; margin: 20px 0;">
                         <p style="margin: 0; color: #856404;">
-                            <strong>⏰ Important:</strong> This new link will expire in <strong>1 hour</strong>.
+                            <strong>Important:</strong> This new link will expire in <strong>1 hour</strong>.
                         </p>
                     </div>
                     
@@ -233,7 +255,7 @@ class EmailService {
                 </div>
                 
                 <div style="background: #f9f9f9; padding: 30px; border: 1px solid #ddd; border-top: none; border-radius: 0 0 10px 10px;">
-                    <h2 style="color: #28a745; margin-top: 0;">✓ Working Paper Approved</h2>
+                    <h2 style="color: #28a745; margin-top: 0;">Working Paper Approved</h2>
                     
                     <p>Dear ' . htmlspecialchars($clientName) . ',</p>
                     

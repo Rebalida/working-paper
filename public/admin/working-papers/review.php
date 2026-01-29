@@ -37,11 +37,21 @@ if (!in_array($wp['status'], ['submitted', 'returned'])) {
 $clientModel = new Client();
 $client = $clientModel->find($wp['client_id']);
 
-// Get expenses with documents
+// Get expenses - separate by who added them
 $expenseModel = new Expense();
-$expenses = $expenseModel->getByWorkingPaperId($wpId);
+$allExpenses = $expenseModel->getByWorkingPaperId($wpId);
 
-// Get documents for each expense
+$adminExpenses = [];
+$clientExpenses = [];
+foreach ($allExpenses as $expense) {
+    if ($expense['added_by'] === 'client') {
+        $clientExpenses[] = $expense;
+    } else {
+        $adminExpenses[] = $expense;
+    }
+}
+
+// Get documents model
 $docModel = new ExpenseDocument();
 
 // Get status history
@@ -57,7 +67,7 @@ ob_start();
     <div class="col-md-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>Review Working Paper</h2>
-            <a href="/public/admin/dashboard.php" class="btn btn-secondary">← Back to Dashboard</a>
+            <a href="/public/admin/dashboard.php" class="btn btn-secondary">Back to Dashboard</a>
         </div>
 
         <!-- Working Paper Header  -->
@@ -79,8 +89,13 @@ ob_start();
                         <p><strong>Created:</strong> <?= date('M d, Y H:i', strtotime($wp['created_at'])) ?></p>
                     </div>
                 </div>
+                
+                <?php if (!empty($clientExpenses)): ?>
+                    <div class="alert alert-info mt-3 mb-0" role="alert">
+                        <strong>Note:</strong> Client has added <?= count($clientExpenses) ?> additional expense(s) to this working paper.
+                    </div>
+                <?php endif; ?>
             </div>
-
         </div>
 
         <!-- Status History -->
@@ -89,7 +104,6 @@ ob_start();
                 <div class="card-header">
                     <h5 class="mb-0">Status History</h5>
                 </div>
-
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-sm">
@@ -123,29 +137,27 @@ ob_start();
             </div>
         <?php endif; ?>
 
-        <!-- Expense Review -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">Expenses Review (<?= count($expenses) ?>)</h5>
-            </div>
-            <div class="card-body">
-                <?php if (empty($expenses)): ?>
-                    <p class="text-muted">No expenses to review</p>
-                <?php else: ?>
+        <!-- Admin-Created Expenses Review -->
+        <?php if (!empty($adminExpenses)): ?>
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Original Expenses from Admin (<?= count($adminExpenses) ?>)</h5>
+                </div>
+                <div class="card-body">
                     <?php 
-                    $total = 0;
-                    foreach ($expenses as $index => $expense): 
-                        $total += $expense['amount'];
+                    $adminTotal = 0;
+                    foreach ($adminExpenses as $index => $expense): 
+                        $adminTotal += $expense['amount'];
                         $documents = $docModel->getByExpenseId($expense['id']);
                     ?>
-                        <div class="card mb-3 <?= $index > 0 ? 'mt-3' : '' ?>">
+                        <div class="card mb-3">
                             <div class="card-header bg-light">
                                 <h6 class="mb-0">Expense #<?= $index + 1 ?></h6>
                             </div>
                             <div class="card-body">
                                 <div class="row mb-3">
                                     <div class="col-md-8">
-                                        <p><strong>Description:</strong></br>
+                                        <p><strong>Description:</strong><br>
                                             <?= htmlspecialchars($expense['description']) ?>
                                         </p>
                                     </div>
@@ -156,7 +168,6 @@ ob_start();
                                     </div>
                                 </div>
 
-                                <!-- Internal Comment (from admin during creation) -->
                                 <?php if ($expense['internal_comment']): ?>
                                     <div class="alert alert-secondary mb-3" role="alert">
                                         <strong>Internal Note (Original):</strong><br>
@@ -164,7 +175,6 @@ ob_start();
                                     </div>
                                 <?php endif; ?>
 
-                                <!-- Client Comment -->
                                 <?php if ($expense['client_comment']): ?>
                                     <div class="alert alert-info mb-3" role="alert">
                                         <strong>Client Comment:</strong><br>
@@ -174,7 +184,6 @@ ob_start();
                                     <p class="text-muted"><em>No client comment provided</em></p>
                                 <?php endif; ?>
 
-                                <!-- Supporting Documents -->
                                 <?php if (!empty($documents)): ?>
                                     <div class="mb-3">
                                         <strong>Supporting Documents:</strong>
@@ -204,7 +213,6 @@ ob_start();
 
                                 <hr>
                                 
-                                <!-- Add/Update Internal Review Comment -->
                                 <div>
                                     <label class="form-label">
                                         <strong>Add Review Note (Internal - not visible to client):</strong>
@@ -219,22 +227,139 @@ ob_start();
                         </div>
                     <?php endforeach; ?>
 
-                    <!-- Total -->
                     <div class="card bg-light">
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-8">
-                                    <h5 class="mb-0">Total Amount:</h5>
+                                    <h6 class="mb-0">Subtotal (Admin Expenses):</h6>
                                 </div>
                                 <div class="col-md-4 text-end">
-                                    <h5 class="mb-0 text-primary">
-                                        $<?= number_format($total, 2) ?>
-                                    </h5>
+                                    <h6 class="mb-0 text-primary">$<?= number_format($adminTotal, 2) ?></h6>
                                 </div>
                             </div>
                         </div>
                     </div>
-                <?php endif; ?>
+                </div>
+            </div>
+        <?php endif; ?>
+
+        <!-- Client-Added Expenses Review -->
+        <?php if (!empty($clientExpenses)): ?>
+            <div class="card mb-4 border-info">
+                <div class="card-header text-white" style="background: #17a2b8;">
+                    <h5 class="mb-0">Client-Added Expenses (<?= count($clientExpenses) ?>)</h5>
+                </div>
+                <div class="card-body">
+                    <?php 
+                    $clientTotal = 0;
+                    foreach ($clientExpenses as $index => $expense): 
+                        $clientTotal += $expense['amount'];
+                        $documents = $docModel->getByExpenseId($expense['id']);
+                    ?>
+                        <div class="card mb-3" style="background: #f8f9fa; border-left: 4px solid #17a2b8;">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">
+                                    <span class="badge bg-info">Client Added</span>
+                                    Expense #<?= $index + 1 ?>
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-8">
+                                        <p><strong>Description:</strong><br>
+                                            <?= htmlspecialchars($expense['description']) ?>
+                                        </p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <p><strong>Amount:</strong><br>
+                                            <span class="fs-5 text-info">$<?= number_format($expense['amount'], 2) ?></span>
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <?php if ($expense['client_comment']): ?>
+                                    <div class="alert alert-info mb-3" role="alert">
+                                        <strong>Client Comment:</strong><br>
+                                        <?= nl2br(htmlspecialchars($expense['client_comment'])) ?>
+                                    </div>
+                                <?php else: ?>
+                                    <p class="text-muted"><em>No comment provided</em></p>
+                                <?php endif; ?>
+
+                                <?php if (!empty($documents)): ?>
+                                    <div class="mb-3">
+                                        <strong>Supporting Documents:</strong>
+                                        <ul class="list-group mt-2">
+                                            <?php foreach ($documents as $doc): ?>
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <span class="badge bg-info">Client</span>
+                                                        <?= htmlspecialchars($doc['file_path']) ?>
+                                                        <br>
+                                                        <small class="text-muted">
+                                                            Uploaded: <?= date('M d, Y H:i', strtotime($doc['created_at'])) ?>
+                                                        </small>
+                                                    </div>
+                                                    <a href="/public/view-file.php?file=<?= htmlspecialchars($doc['file_path']) ?>" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                        View
+                                                    </a>
+                                                </li>
+                                            <?php endforeach; ?>
+                                        </ul>
+                                    </div>
+                                <?php else: ?>
+                                    <p class="text-muted"><em>No supporting documents uploaded</em></p>
+                                <?php endif; ?>
+
+                                <hr>
+                                
+                                <div>
+                                    <label class="form-label">
+                                        <strong>Add Review Note (Internal - not visible to client):</strong>
+                                    </label>
+                                    <textarea class="form-control" id="review_note_<?= $expense['id'] ?>" rows="2" placeholder="Add internal review notes for this expense..."></textarea>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="saveReviewNote(<?= $expense['id'] ?>)">
+                                        Save Note
+                                    </button>
+                                    <span id="save_status_<?= $expense['id'] ?>" class="ms-2"></span>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+
+                    <div class="card" style="background: #d1ecf1;">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h6 class="mb-0">Subtotal (Client Expenses):</h6>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <h6 class="mb-0 text-info">$<?= number_format($clientTotal, 2) ?></h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <?php endif; ?>
+
+        <!-- Grand Total -->
+        <div class="card bg-dark text-white mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h5 class="mb-0">Grand Total:</h5>
+                        <small>
+                            Admin: $<?= number_format($adminTotal ?? 0, 2) ?> + 
+                            Client: $<?= number_format($clientTotal ?? 0, 2) ?>
+                        </small>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <h4 class="mb-0">
+                            $<?= number_format(($adminTotal ?? 0) + ($clientTotal ?? 0), 2) ?>
+                        </h4>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -271,7 +396,6 @@ ob_start();
 </div>
 
 <script>
-// Save review note via AJAX (optional feature)
 function saveReviewNote(expenseId) {
     const noteText = document.getElementById('review_note_' + expenseId).value;
     const statusSpan = document.getElementById('save_status_' + expenseId);
@@ -293,16 +417,16 @@ function saveReviewNote(expenseId) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            statusSpan.innerHTML = '<span class="text-success">✓ Saved</span>';
+            statusSpan.innerHTML = '<span class="text-success">Saved</span>';
             setTimeout(() => {
                 statusSpan.innerHTML = '';
             }, 3000);
         } else {
-            statusSpan.innerHTML = '<span class="text-danger">✗ Error</span>';
+            statusSpan.innerHTML = '<span class="text-danger">Error</span>';
         }
     })
     .catch(error => {
-        statusSpan.innerHTML = '<span class="text-danger">✗ Error</span>';
+        statusSpan.innerHTML = '<span class="text-danger">Error</span>';
     });
 }
 </script>

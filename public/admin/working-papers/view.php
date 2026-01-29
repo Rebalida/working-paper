@@ -187,6 +187,63 @@ ob_start();
             </script>
         <?php endif; ?>
 
+        <!-- Client-Added Expenses (if any) -->
+        <?php
+        $clientAddedExpenses = array_filter($expenses, function($exp) {
+            return $exp['added_by'] === 'client';
+        });
+        ?>
+        
+        <?php if (!empty($clientAddedExpenses)): ?>
+            <div class="card mb-4 border-info">
+                <div class="card-header text-white" style="background: #17a2b8;">
+                    <h5 class="mb-0">Client-Added Expenses</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                    <th>Client Comment</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php 
+                                $clientTotal = 0;
+                                $clientIndex = 1;
+                                foreach ($clientAddedExpenses as $expense): 
+                                    $clientTotal += $expense['amount'];
+                                ?>
+                                    <tr>
+                                        <td><?= $clientIndex++ ?></td>
+                                        <td>
+                                            <span class="badge bg-info">Client Added</span>
+                                            <?= htmlspecialchars($expense['description']) ?>
+                                        </td>
+                                        <td>$<?= number_format($expense['amount'], 2) ?></td>
+                                        <td>
+                                            <?php if ($expense['client_comment']): ?>
+                                                <?= htmlspecialchars($expense['client_comment']) ?>
+                                            <?php else: ?>
+                                                <span class="text-muted">-</span>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                                <tr class="table-info">
+                                    <td colspan="2" class="text-end"><strong>Client Expenses Total:</strong></td>
+                                    <td colspan="2"><strong>$<?= number_format($clientTotal, 2) ?></strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        <?php endif; ?>
+
         <!-- Expenses Table -->
         <div class="card mb-4">
             <div class="card-header">

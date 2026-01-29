@@ -48,9 +48,20 @@ $canSubmit = ClientAuth::canSubmit($token);
 $clientModel = new Client();
 $client = $clientModel->find($workingPaper['client_id']);
 
-// Get expenses
+// Get expenses - separate admin and client expenses
 $expenseModel = new Expense();
-$expenses = $expenseModel->getByWorkingPaperId($workingPaper['id']);
+$allExpenses = $expenseModel->getByWorkingPaperId($workingPaper['id']);
+
+// Separate expenses by who added them
+$adminExpenses = [];
+$clientExpenses = [];
+foreach ($allExpenses as $expense) {
+    if ($expense['added_by'] === 'client') {
+        $clientExpenses[] = $expense;
+    } else {
+        $adminExpenses[] = $expense;
+    }
+}
 
 $pageTitle = 'Working Paper Review';
 
@@ -127,7 +138,8 @@ ob_start();
             <li>Review each expense below</li>
             <li>Add your comments for each expense (optional)</li>
             <li>Upload supporting documents (receipts, invoices, etc.) if needed</li>
-            <li>Click "Submit " when you're done</li>
+            <li><strong>Add any additional expenses you need to claim</strong></li>
+            <li>Click "Submit" when you're done</li>
         </ol>
     </div>
 <?php endif; ?>
@@ -137,16 +149,15 @@ ob_start();
     <input type="hidden" name="token" value="<?= htmlspecialchars($token) ?>">
     <input type="hidden" name="working_paper_id" value="<?= $workingPaper['id'] ?>">
     
-    <div class="card mb-4">
-        <div class="card-header">
-            <h5 class="mb-0">Expenses (<?= count($expenses) ?>)</h5>
-        </div>
-        <div class="card-body">
-            <?php if (empty($expenses)): ?>
-                <p class="text-muted">No expenses to review.</p>
-            <?php else: ?>
-                <?php foreach ($expenses as $index => $expense): ?>
-                    <div class="card mb-3 <?= $index > 0 ? 'mt-3' : '' ?>">
+    <!-- Admin-Created Expenses -->
+    <?php if (!empty($adminExpenses)): ?>
+        <div class="card mb-4">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">Expenses from Admin (<?= count($adminExpenses) ?>)</h5>
+            </div>
+            <div class="card-body">
+                <?php foreach ($adminExpenses as $index => $expense): ?>
+                    <div class="card mb-3">
                         <div class="card-header bg-light">
                             <h6 class="mb-0">Expense #<?= $index + 1 ?></h6>
                         </div>
@@ -172,7 +183,7 @@ ob_start();
                                     <textarea 
                                         class="form-control" 
                                         id="comment_<?= $expense['id'] ?>" 
-                                        name="expenses[<?= $expense['id'] ?>][comment]" 
+                                        name="existing_expenses[<?= $expense['id'] ?>][comment]" 
                                         rows="3"
                                         placeholder="Add any comments or explanations for this expense..."
                                         <?= !$canSubmit ? 'readonly' : '' ?>
@@ -188,7 +199,7 @@ ob_start();
                                         <input 
                                             type="file" 
                                             class="form-control" 
-                                            name="expenses[<?= $expense['id'] ?>][documents][]"
+                                            name="existing_expenses[<?= $expense['id'] ?>][documents][]"
                                             accept=".pdf,.jpg,.jpeg,.png"
                                             multiple
                                         >
@@ -226,23 +237,127 @@ ob_start();
                         </div>
                     </div>
                 <?php endforeach; ?>
+            </div>
+        </div>
+    <?php endif; ?>
 
-                <!-- Total -->
-                <div class="card bg-light">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-8">
-                                <h5 class="mb-0">Total Amount:</h5>
+    <!-- Client-Added Expenses Section -->
+    <div class="card mb-4">
+        <div class="card-header" style="background: #d1ecf1;">
+            <h5 class="mb-0">Your Additional Expenses</h5>
+        </div>
+        <div class="card-body">
+            
+            <div id="client-expenses-container">
+                <?php if (!empty($clientExpenses)): ?>
+                    <?php foreach ($clientExpenses as $index => $expense): ?>
+                        <div class="card mb-3 border-info" style="background: #f8f9fa;">
+                            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                                <span><strong>Client Added - Expense #<?= $index + 1 ?></strong></span>
+                                <?php if ($canSubmit): ?>
+                                    <button type="button" class="btn btn-sm btn-danger" onclick="removeClientExpense(this, <?= $expense['id'] ?>)">
+                                        Remove
+                                    </button>
+                                <?php endif; ?>
                             </div>
-                            <div class="col-md-4 text-end">
-                                <h5 class="mb-0 text-primary">
-                                    $<?= number_format(array_sum(array_column($expenses, 'amount')), 2) ?>
-                                </h5>
+                            <div class="card-body">
+                                <input type="hidden" name="client_expenses[<?= $expense['id'] ?>][id]" value="<?= $expense['id'] ?>">
+                                
+                                <div class="row">
+                                    <div class="col-md-8 mb-3">
+                                        <label class="form-label"><strong>Description</strong> <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" 
+                                               name="client_expenses[<?= $expense['id'] ?>][description]" 
+                                               value="<?= htmlspecialchars($expense['description']) ?>"
+                                               placeholder="e.g. Travel Expenses" 
+                                               required
+                                               <?= !$canSubmit ? 'readonly' : '' ?>>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label"><strong>Amount</strong> <span class="text-danger">*</span></label>
+                                        <input type="number" step="0.01" class="form-control" 
+                                               name="client_expenses[<?= $expense['id'] ?>][amount]" 
+                                               value="<?= $expense['amount'] ?>"
+                                               placeholder="0.00" 
+                                               required
+                                               <?= !$canSubmit ? 'readonly' : '' ?>>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-12 mb-3">
+                                        <label class="form-label"><strong>Comment</strong> <span class="text-muted">(Optional)</span></label>
+                                        <textarea class="form-control" 
+                                                  name="client_expenses[<?= $expense['id'] ?>][comment]" 
+                                                  rows="3"
+                                                  placeholder="Add any explanation for this expense..."
+                                                  <?= !$canSubmit ? 'readonly' : '' ?>><?= htmlspecialchars($expense['client_comment'] ?? '') ?></textarea>
+                                    </div>
+
+                                    <div class="col-md-12">
+                                        <label class="form-label"><strong>Supporting Documents</strong> <span class="text-muted">(Optional)</span></label>
+                                        
+                                        <?php if ($canSubmit): ?>
+                                            <input type="file" class="form-control" 
+                                                   name="client_expenses[<?= $expense['id'] ?>][documents][]"
+                                                   accept=".pdf,.jpg,.jpeg,.png"
+                                                   multiple>
+                                            <small class="form-text text-muted">Accepted formats: PDF, JPG, PNG (Max 5MB per file)</small>
+                                        <?php endif; ?>
+
+                                        <?php
+                                        $documents = $docModel->getByExpenseId($expense['id']);
+                                        if (!empty($documents)):
+                                        ?>
+                                            <div class="mt-2">
+                                                <small class="text-muted">Uploaded documents:</small>
+                                                <ul class="list-group list-group-sm mt-1">
+                                                    <?php foreach ($documents as $doc): ?>
+                                                        <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                                                            <span><small><?= htmlspecialchars($doc['file_path']) ?></small></span>
+                                                            <span class="badge bg-secondary"><?= ucfirst($doc['uploaded_by']) ?></span>
+                                                        </li>
+                                                    <?php endforeach; ?>
+                                                </ul>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <p class="text-muted text-center mb-0">No additional expenses added yet.</p>
+                <?php endif; ?>
+            </div>
+
+            <?php if ($canSubmit): ?>
+                <div class="text-center mt-3">
+                    <button type="button" class="btn btn-outline-primary" onclick="addClientExpense()">
+                        Add Another Expense
+                    </button>
                 </div>
             <?php endif; ?>
+        </div>
+    </div>
+
+    <!-- Total -->
+    <div class="card bg-light mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <h5 class="mb-0">Total Amount:</h5>
+                    <small class="text-muted">
+                        Admin expenses: $<?= number_format(array_sum(array_column($adminExpenses, 'amount')), 2) ?> + 
+                        Your expenses: $<span id="client-total"><?= number_format(array_sum(array_column($clientExpenses, 'amount')), 2) ?></span>
+                    </small>
+                </div>
+                <div class="col-md-4 text-end">
+                    <h5 class="mb-0 text-primary">
+                        $<span id="grand-total"><?= number_format(array_sum(array_column($allExpenses, 'amount')), 2) ?></span>
+                    </h5>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -269,6 +384,109 @@ ob_start();
         </div>
     <?php endif; ?>
 </form>
+
+<script>
+let newExpenseCount = 0;
+
+function addClientExpense() {
+    const container = document.getElementById('client-expenses-container');
+    
+    // Remove "no expenses" message if it exists
+    const noExpensesMsg = container.querySelector('p.text-muted');
+    if (noExpensesMsg) {
+        noExpensesMsg.remove();
+    }
+    
+    const newExpense = `
+        <div class="card mb-3 border-info" style="background: #f8f9fa;">
+            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                <span><strong>New Expense</strong></span>
+                <button type="button" class="btn btn-sm btn-danger" onclick="removeNewClientExpense(this)">
+                    Remove
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8 mb-3">
+                        <label class="form-label"><strong>Description</strong> <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" 
+                               name="new_client_expenses[${newExpenseCount}][description]" 
+                               placeholder="e.g. Travel Expenses" 
+                               required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label"><strong>Amount</strong> <span class="text-danger">*</span></label>
+                        <input type="number" step="0.01" class="form-control expense-amount" 
+                               name="new_client_expenses[${newExpenseCount}][amount]" 
+                               placeholder="0.00" 
+                               required
+                               onchange="updateTotals()">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label"><strong>Comment</strong> <span class="text-muted">(Optional)</span></label>
+                        <textarea class="form-control" 
+                                  name="new_client_expenses[${newExpenseCount}][comment]" 
+                                  rows="3"
+                                  placeholder="Add any explanation for this expense..."></textarea>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label"><strong>Supporting Documents</strong> <span class="text-muted">(Optional)</span></label>
+                        <input type="file" class="form-control" 
+                               name="new_client_expenses[${newExpenseCount}][documents][]"
+                               accept=".pdf,.jpg,.jpeg,.png"
+                               multiple>
+                        <small class="form-text text-muted">Accepted formats: PDF, JPG, PNG (Max 5MB per file)</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', newExpense);
+    newExpenseCount++;
+}
+
+function removeNewClientExpense(button) {
+    button.closest('.card').remove();
+    
+    // Check if container is empty, show message
+    const container = document.getElementById('client-expenses-container');
+    if (container.children.length === 0) {
+        container.innerHTML = '<p class="text-muted text-center mb-0">No additional expenses added yet.</p>';
+    }
+    
+    updateTotals();
+}
+
+function removeClientExpense(button, expenseId) {
+    if (confirm('Are you sure you want to remove this expense?')) {
+        // Add hidden input to mark for deletion
+        const form = document.getElementById('expensesForm');
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'delete_expenses[]';
+        input.value = expenseId;
+        form.appendChild(input);
+        
+        // Remove the card
+        button.closest('.card').remove();
+        
+        // Check if container is empty
+        const container = document.getElementById('client-expenses-container');
+        if (container.children.length === 0) {
+            container.innerHTML = '<p class="text-muted text-center mb-0">No additional expenses added yet.</p>';
+        }
+        
+        updateTotals();
+    }
+}
+
+function updateTotals() {
+        
+}
+</script>
 
 <?php
 $content = ob_get_clean();
