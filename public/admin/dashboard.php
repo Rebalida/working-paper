@@ -60,6 +60,13 @@ ob_start();
             </a>
         </div>
 
+        <?php if (isset($_GET['success']) && $_GET['success'] === 'deleted'): ?>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <strong>Working paper deleted successfully!</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endif; ?>
+
         <!-- Status Filter Tabs -->
         <ul class="nav nav-tabs mb-3">
             <li class="nav-item">
@@ -154,6 +161,11 @@ ob_start();
                                                         Review
                                                     </a>
                                                 <?php endif; ?>
+                                                <button type="button" 
+                                                        class="btn btn-outline-danger" 
+                                                        onclick="confirmDeleteFromDashboard(<?= $wp['id'] ?>, '<?= htmlspecialchars($wp['client_name'], ENT_QUOTES) ?>')">
+                                                    Delete
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
@@ -166,6 +178,41 @@ ob_start();
         </div>
     </div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteDashboardModal" tabindex="-1" aria-labelledby="deleteDashboardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteDashboardModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Are you sure you want to delete this working paper?</strong></p>
+                <p id="deleteClientName" class="mb-3"></p>
+                <div class="alert alert-danger mb-0" role="alert">
+                    <strong>Warning:</strong> This will permanently delete the working paper, all expenses, documents, and history. This action cannot be undone!
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="/public/admin/working-papers/delete.php" id="deleteDashboardForm">
+                    <input type="hidden" name="working_paper_id" id="deleteDashboardWpId" value="">
+                    <button type="submit" class="btn btn-danger">Delete Permanently</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function confirmDeleteFromDashboard(wpId, clientName) {
+        document.getElementById('deleteDashboardWpId').value = wpId;
+        document.getElementById('deleteClientName').innerHTML = '<strong>Client:</strong> ' + clientName;
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteDashboardModal'));
+        deleteModal.show();
+    }
+</script>
 
 <?php
 $content = ob_get_clean();

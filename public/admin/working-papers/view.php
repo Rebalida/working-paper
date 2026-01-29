@@ -306,7 +306,7 @@ ob_start();
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">Actions</h5>
-                <div class="d-flex gap-2">
+                <div class="d-flex gap-2 align-items-center">
                     <?php if ($wp['status'] === 'draft'): ?>
                         <a href="/public/admin/working-papers/send.php?id=<?= $wpId ?>" 
                            class="btn btn-success">
@@ -324,11 +324,56 @@ ob_start();
                     <?php elseif ($wp['status'] === 'approved'): ?>
                         <span class="badge bg-success pb-2 fs-6">Approved</span>
                     <?php endif; ?>
+
+                    <button type="button" class="btn btn-danger" onclick="confirmDelete(<?= $wpId ?>)">
+                        Delete
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Are you sure you want to delete this working paper?</strong></p>
+                <p>This action will permanently delete:</p>
+                <ul>
+                    <li>The working paper</li>
+                    <li>All expenses (admin and client-added)</li>
+                    <li>All uploaded documents</li>
+                    <li>All access tokens</li>
+                    <li>All status history</li>
+                </ul>
+                <div class="alert alert-danger mb-0" role="alert">
+                    <strong>Warning:</strong> This action cannot be undone!
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="/public/admin/working-papers/delete.php" id="deleteForm">
+                    <input type="hidden" name="working_paper_id" id="deleteWpId" value="">
+                    <button type="submit" class="btn btn-danger">Delete Permanently</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDelete(wpId) {
+    document.getElementById('deleteWpId').value = wpId;
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    deleteModal.show();
+}
+</script>
 
 <?php
 $content = ob_get_clean();
