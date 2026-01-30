@@ -14,7 +14,7 @@ if (!isset($pageTitle)) {
 <body>
 
     <nav class="navbar navbar-dark bg-dark">
-        <div class="container-fluid">
+        <div class="container">
             <span class="navbar-brand mb-0 h1">Working Paper Endurego</span>
             <div class="d-flex align-items-center text-white">
                 <span class="me-3">Welcome, <?= htmlspecialchars($user['name']) ?></span>

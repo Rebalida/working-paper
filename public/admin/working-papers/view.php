@@ -305,29 +305,36 @@ ob_start();
         <!-- Action Buttons -->
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">Actions</h5>
-                <div class="d-flex gap-2 align-items-center">
-                    <?php if ($wp['status'] === 'draft'): ?>
-                        <a href="/public/admin/working-papers/send.php?id=<?= $wpId ?>" 
-                           class="btn btn-success">
-                            Send to Client
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">Actions</h5>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <?php if ($wp['status'] === 'draft'): ?>
+                            <a href="/public/admin/working-papers/send.php?id=<?= $wpId ?>" class="btn btn-success">
+                                Send to Client
+                            </a>
+                            <a href="/public/admin/working-papers/edit.php?id=<?= $wpId ?>" class="btn btn-warning">
+                                Edit
+                            </a>
+                        <?php elseif ($wp['status'] === 'submitted'): ?>
+                            <a href="/public/admin/working-papers/review.php?id=<?= $wpId ?>" class="btn btn-primary">
+                                Review & Approve
+                            </a>
+                        <?php elseif ($wp['status'] === 'approved'): ?>
+                            <span class="badge bg-success pb-2 fs-6">Approved</span>
+                        <?php endif; ?>
+                        
+                        <!-- Export PDF Button -->
+                        <a href="/public/admin/working-papers/export-pdf.php?id=<?= $wpId ?>" class="btn btn-info" target="_blank">
+                            Export PDF
                         </a>
-                        <a href="/public/admin/working-papers/edit.php?id=<?= $wpId ?>" 
-                           class="btn btn-warning">
-                            Edit
-                        </a>
-                    <?php elseif ($wp['status'] === 'submitted'): ?>
-                        <a href="/public/admin/working-papers/review.php?id=<?= $wpId ?>" 
-                           class="btn btn-primary">
-                            Review & Approve
-                        </a>
-                    <?php elseif ($wp['status'] === 'approved'): ?>
-                        <span class="badge bg-success pb-2 fs-6">Approved</span>
-                    <?php endif; ?>
-
-                    <button type="button" class="btn btn-danger" onclick="confirmDelete(<?= $wpId ?>)">
-                        Delete
-                    </button>
+                        
+                        <!-- Delete Button -->
+                        <button type="button" class="btn btn-danger" onclick="confirmDelete(<?= $wpId ?>)">
+                            Delete
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

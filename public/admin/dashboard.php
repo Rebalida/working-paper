@@ -70,38 +70,32 @@ ob_start();
         <!-- Status Filter Tabs -->
         <ul class="nav nav-tabs mb-3">
             <li class="nav-item">
-                <a class="nav-link <?= $statusFilter === 'all' ? 'active' : '' ?>" 
-                   href="?status=all">
+                <a class="nav-link <?= $statusFilter === 'all' ? 'active' : '' ?>" href="?status=all">
                     All (<?= count($allPapers) ?>)
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link <?= $statusFilter === 'draft' ? 'active' : '' ?>" 
-                   href="?status=draft">
+                <a class="nav-link <?= $statusFilter === 'draft' ? 'active' : '' ?>" href="?status=draft">
                     Draft (<?= $statusCounts['draft'] ?>)
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link <?= $statusFilter === 'sent' ? 'active' : '' ?>" 
-                   href="?status=sent">
+                <a class="nav-link <?= $statusFilter === 'sent' ? 'active' : '' ?>" href="?status=sent">
                     Sent (<?= $statusCounts['sent'] ?>)
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link <?= $statusFilter === 'submitted' ? 'active' : '' ?>" 
-                   href="?status=submitted">
+                <a class="nav-link <?= $statusFilter === 'submitted' ? 'active' : '' ?>" href="?status=submitted">
                     Submitted (<?= $statusCounts['submitted'] ?>)
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link <?= $statusFilter === 'returned' ? 'active' : '' ?>" 
-                   href="?status=returned">
+                <a class="nav-link <?= $statusFilter === 'returned' ? 'active' : '' ?>" href="?status=returned">
                     Returned (<?= $statusCounts['returned'] ?>)
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link <?= $statusFilter === 'approved' ? 'active' : '' ?>" 
-                   href="?status=approved">
+                <a class="nav-link <?= $statusFilter === 'approved' ? 'active' : '' ?>" href="?status=approved">
                     Approved (<?= $statusCounts['approved'] ?>)
                 </a>
             </li>
@@ -146,24 +140,22 @@ ob_start();
                                         <td><?= date('M d, Y', strtotime($wp['created_at'])) ?></td>
                                         <td>
                                             <div class="btn-group btn-group-sm" role="group">
-                                                <a href="/public/admin/working-papers/view.php?id=<?= $wp['id'] ?>" 
-                                                   class="btn btn-outline-primary">
+                                                <a href="/public/admin/working-papers/view.php?id=<?= $wp['id'] ?>" class="btn btn-outline-primary">
                                                     View
                                                 </a>
                                                 <?php if ($wp['status'] === 'draft'): ?>
-                                                    <a href="/public/admin/working-papers/send.php?id=<?= $wp['id'] ?>" 
-                                                       class="btn btn-outline-success">
+                                                    <a href="/public/admin/working-papers/send.php?id=<?= $wp['id'] ?>" class="btn btn-outline-success">
                                                         Send
                                                     </a>
                                                 <?php elseif ($wp['status'] === 'submitted'): ?>
-                                                    <a href="/public/admin/working-papers/review.php?id=<?= $wp['id'] ?>" 
-                                                       class="btn btn-outline-warning">
+                                                    <a href="/public/admin/working-papers/review.php?id=<?= $wp['id'] ?>" class="btn btn-outline-warning">
                                                         Review
                                                     </a>
                                                 <?php endif; ?>
-                                                <button type="button" 
-                                                        class="btn btn-outline-danger" 
-                                                        onclick="confirmDeleteFromDashboard(<?= $wp['id'] ?>, '<?= htmlspecialchars($wp['client_name'], ENT_QUOTES) ?>')">
+                                                <a href="/public/admin/working-papers/export-pdf.php?id=<?= $wp['id'] ?>" class="btn btn-outline-info" target="_blank">
+                                                    PDF
+                                                </a>
+                                                <button type="button" class="btn btn-outline-danger" onclick="confirmDeleteFromDashboard(<?= $wp['id'] ?>, '<?= htmlspecialchars($wp['client_name'], ENT_QUOTES) ?>')">
                                                     Delete
                                                 </button>
                                             </div>
